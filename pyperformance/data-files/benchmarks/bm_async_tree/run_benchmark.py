@@ -6,10 +6,10 @@ variants include:
 
 1) "none": No actual async work in the async tree.
 2) "io": All leaf nodes simulate async IO workload (async sleep 50ms).
-3) "memoization": All leaf nodes simulate async IO workload with 90% of 
+3) "memoization": All leaf nodes simulate async IO workload with 90% of
                   the data memoized
-4) "cpu_io_mixed": Half of the leaf nodes simulate CPU-bound workload and 
-                   the other half simulate the same workload as the 
+4) "cpu_io_mixed": Half of the leaf nodes simulate CPU-bound workload and
+                   the other half simulate the same workload as the
                    "memoization" variant.
 """
 
@@ -115,10 +115,10 @@ def add_parser_args(parser):
 Determines which benchmark to run. Options:
 1) "none": No actual async work in the async tree.
 2) "io": All leaf nodes simulate async IO workload (async sleep 50ms).
-3) "memoization": All leaf nodes simulate async IO workload with 90% of 
+3) "memoization": All leaf nodes simulate async IO workload with 90% of
                   the data memoized
-4) "cpu_io_mixed": Half of the leaf nodes simulate CPU-bound workload and 
-                   the other half simulate the same workload as the 
+4) "cpu_io_mixed": Half of the leaf nodes simulate CPU-bound workload and
+                   the other half simulate the same workload as the
                    "memoization" variant.
 """,
     )
@@ -132,6 +132,13 @@ BENCHMARKS = {
 }
 
 
+def eager_loop_factory():
+    loop = asyncio.new_event_loop()
+    if hasattr(asyncio, 'eager_task_factory'):
+        loop.set_task_factory(asyncio.eager_task_factory)
+    return loop
+
+
 if __name__ == "__main__":
     runner = pyperf.Runner(add_cmdline_args=add_cmdline_args)
     add_metadata(runner)
@@ -141,5 +148,5 @@ if __name__ == "__main__":
 
     async_tree_class = BENCHMARKS[benchmark]
     async_tree = async_tree_class()
-    runner.bench_async_func(f"async_tree_{benchmark}", async_tree.run)
-
+    runner.bench_async_func(f"async_tree_{benchmark}", async_tree.run,
+                            loop_factory=eager_loop_factory)
