@@ -52,9 +52,12 @@ class AsyncTree:
             await self.workload_func()
             return
 
-        await asyncio.gather(
-            *[self.recurse(recurse_level - 1) for _ in range(NUM_RECURSE_BRANCHES)]
-        )
+        # await asyncio.gather(
+        #     *[self.recurse(recurse_level - 1) for _ in range(NUM_RECURSE_BRANCHES)]
+        # )
+        async with asyncio.TaskGroup() as tg:
+            for _ in range(NUM_RECURSE_BRANCHES):
+                tg.create_task(self.recurse(recurse_level - 1))
 
     async def run(self):
         await self.recurse(NUM_RECURSE_LEVELS)
